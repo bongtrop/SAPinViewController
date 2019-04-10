@@ -12,9 +12,9 @@ import SnapKit
 /// SAPinViewControllerDelegate
 /// Any ViewController that would like to present `SAPinViewController` should implement
 /// all these protocol methods
-public protocol SAPinViewControllerDelegate: class {
+public protocol SAPinViewControllerDelegate {
     
-    /// Gets called upon tapping on `Cancel` button 
+    /// Gets called upon tapping on `Cancel` button
     /// required and must be implemented
     func pinEntryWasCancelled()
     
@@ -43,7 +43,7 @@ open class SAPinViewController: UIViewController {
     open var circleBorderColor: UIColor! {
         didSet {
             if circleViews.count > 0 {
-                for i in 0...3 {
+                for i in 0...5 {
                     circleViews[i].circleBorderColor = circleBorderColor
                 }
             }
@@ -184,7 +184,7 @@ open class SAPinViewController: UIViewController {
                     }
                 }
                 if circleViews.count > 0  {
-                    for i in 0...3 {
+                    for i in 0...5 {
                         circleViews[i].isRoundedRect = safeIsRoundedRect
                     }
                 }
@@ -202,7 +202,7 @@ open class SAPinViewController: UIViewController {
     fileprivate var cancelButton: UIButton!
     fileprivate var dotContainerWidth: CGFloat = 0
     fileprivate var tappedButtons: [Int] = []
-    fileprivate weak var delegate: SAPinViewControllerDelegate?
+    fileprivate var delegate: SAPinViewControllerDelegate?
     fileprivate var backgroundImage: UIImage!
     fileprivate var logoImage: UIImage!
     
@@ -231,7 +231,6 @@ open class SAPinViewController: UIViewController {
                 self.logoImage = safeLogoImage
             }
         }
-        self.modalPresentationStyle = UIModalPresentationStyle.formSheet
         self.setupUI()
     }
     
@@ -254,7 +253,7 @@ open class SAPinViewController: UIViewController {
             })
         }
         view.addSubview(blurView)
-        view.bringSubview(toFront: blurView)
+        view.bringSubviewToFront(blurView)
         blurView.snp.makeConstraints { (make) in
             make.edges.equalTo(self.view)
         }
@@ -360,7 +359,7 @@ open class SAPinViewController: UIViewController {
             make.centerX.equalTo(numPadView.snp.centerX)
         }
         
-        for _ in 0...3 {
+        for _ in 0...5 {
             let aBall = SACircleView(frame: CGRect(x: 0, y: 0, width: SAPinConstant.CircleWidth, height: SAPinConstant.CircleWidth))
             
             dotContainerView.addSubview(aBall)
@@ -368,29 +367,38 @@ open class SAPinViewController: UIViewController {
         }
     }
     fileprivate func layoutCircles() {
-        for i in 0...3 {
+        for i in 0...5 {
             circleViews[i].snp.makeConstraints({ (make) in
                 make.width.equalTo(SAPinConstant.CircleWidth)
                 make.height.equalTo(SAPinConstant.CircleWidth)
             })
         }
-        let dotLeading = (dotContainerWidth - 3*SAPinConstant.ButtonPadding - 4*SAPinConstant.CircleWidth)/2.0
+        let dotLeading = (dotContainerWidth - 5*SAPinConstant.ButtonPadding - 6*SAPinConstant.CircleWidth)/2.0
         circleViews[0].snp.makeConstraints { (make) in
             make.leading.equalTo(dotContainerView).offset(dotLeading)
-            make.top.equalTo(dotContainerView)
-        }
-        circleViews[3].snp.makeConstraints { (make) in
-            make.trailing.equalTo(dotContainerView).offset(-dotLeading)
-            make.top.equalTo(dotContainerView)
-        }
-        circleViews[2].snp.makeConstraints { (make) in
-            make.trailing.equalTo(circleViews[3]).offset(-1.45*SAPinConstant.ButtonPadding)
             make.top.equalTo(dotContainerView)
         }
         circleViews[1].snp.makeConstraints { (make) in
             make.leading.equalTo(circleViews[0]).offset(1.45*SAPinConstant.ButtonPadding)
             make.top.equalTo(dotContainerView)
         }
+        circleViews[2].snp.makeConstraints { (make) in
+            make.leading.equalTo(circleViews[1]).offset(1.45*SAPinConstant.ButtonPadding)
+            make.top.equalTo(dotContainerView)
+        }
+        circleViews[5].snp.makeConstraints { (make) in
+            make.trailing.equalTo(dotContainerView).offset(-dotLeading)
+            make.top.equalTo(dotContainerView)
+        }
+        circleViews[4].snp.makeConstraints { (make) in
+            make.trailing.equalTo(circleViews[5]).offset(-1.45*SAPinConstant.ButtonPadding)
+            make.top.equalTo(dotContainerView)
+        }
+        circleViews[3].snp.makeConstraints { (make) in
+            make.trailing.equalTo(circleViews[4]).offset(-1.45*SAPinConstant.ButtonPadding)
+            make.top.equalTo(dotContainerView)
+        }
+        
     }
     fileprivate func addSubtitle() {
         subtitleLabel = UILabel()
@@ -453,7 +461,7 @@ open class SAPinViewController: UIViewController {
         cancelButton.snp.makeConstraints { (make) in
             make.trailing.equalTo(numPadView.snp.trailing)
             if UIDevice.current.userInterfaceIdiom == .phone {
-                // 3.5" special case 
+                // 3.5" special case
                 if isSmallScreen() {
                     make.bottom.equalTo(numPadView)
                 } else {
@@ -469,7 +477,7 @@ open class SAPinViewController: UIViewController {
             make.height.equalTo(44)
         }
     }
-    func cancelDeleteTap() {
+    @objc func cancelDeleteTap() {
         if cancelButton.titleLabel?.text == SAPinConstant.DeleteString {
             if tappedButtons.count > 0 {
                 circleViews[tappedButtons.count-1].animateTapEmpty()
@@ -486,17 +494,17 @@ open class SAPinViewController: UIViewController {
         return UIScreen.main.bounds.height == 480
     }
     fileprivate func setAttributedTitleForButtonWithTitle(_ title: String, font: UIFont, color: UIColor) {
-        cancelButton.setAttributedTitle(NSAttributedString(string: title, attributes: [NSFontAttributeName:font,NSForegroundColorAttributeName:color]), for: UIControlState())
+        cancelButton.setAttributedTitle(NSAttributedString(string: title, attributes: [NSAttributedString.Key.font:font,NSAttributedString.Key.foregroundColor:color]), for: UIControl.State())
     }
     fileprivate func pinErrorAnimate() {
         for item in circleViews {
-            UIView.animate(withDuration: 0.1, animations: {
+            UIView.animate(withDuration: 0.05, animations: {
                 item.backgroundColor = item.circleBorderColor.withAlphaComponent(0.7)
                 
-                }, completion: { finished in
-                    UIView.animate(withDuration: 0.5, animations: {
-                        item.backgroundColor = UIColor.clear
-                    })
+            }, completion: { finished in
+                UIView.animate(withDuration: 0.05, animations: {
+                    item.backgroundColor = UIColor.clear
+                })
             })
         }
         animateView()
@@ -509,7 +517,7 @@ open class SAPinViewController: UIViewController {
     fileprivate func setOptions() {
         for item in circleViews {
             item.force = 2.2
-            item.duration = 1
+            item.duration = 0.05
             item.delay = 0
             item.damping = 0.7
             item.velocity = 0.7
@@ -529,12 +537,12 @@ open class SAPinViewController: UIViewController {
 
 extension SAPinViewController: SAButtonViewDelegate {
     func buttonTappedWithTag(_ tag: Int) {
-        if tappedButtons.count < 4 {
+        if tappedButtons.count < 6 {
             circleViews[tappedButtons.count].animateTapFull()
             tappedButtons.append(tag)
             setAttributedTitleForButtonWithTitle(SAPinConstant.DeleteString, font: cancelButtonFont, color: cancelButtonColor)
-            if tappedButtons.count == 4 {
-                if delegate!.isPinValid("\(tappedButtons[0])\(tappedButtons[1])\(tappedButtons[2])\(tappedButtons[3])") {
+            if tappedButtons.count == 6 {
+                if delegate!.isPinValid("\(tappedButtons[0])\(tappedButtons[1])\(tappedButtons[2])\(tappedButtons[3])\(tappedButtons[4])\(tappedButtons[5])") {
                     delegate?.pinEntryWasSuccessful()
                 } else {
                     delegate?.pinWasIncorrect()
